@@ -33,6 +33,9 @@ class DataTransformation:
                 ('OneHotEncoder',OneHotEncoder()),
                 ('Standardscalar',StandardScaler(with_mean=False))
             ])
+            logging.info(f"Categorical columns: {categorical_columns}")
+            logging.info(f"Numerical columns: {numerical_columns}")
+
             preprocessor = ColumnTransformer(
                 [('numpipeline',num_pipeline,numerical_columns),
                 ('catpipeline',cat_pipeline,categorical_columns)
@@ -44,16 +47,21 @@ class DataTransformation:
         try:
             train_df = pd.read_csv(train_path)
             test_df = pd.read_csv(test_path)
+            logging.info("Read train and test data completed")
+
+            logging.info("Obtaining preprocessing object")
+
             preprocessor_obj = self.get_data_transformer_obj()
             target_column = 'math_score'
-            input_train_data = train_df.drop(columns = target_column,axis = 1)
+            input_train_data = train_df.drop(columns = [target_column],axis = 1)
             target_train_data = train_df[target_column]
-            input_test_data = test_df.drop(columns = target_column,axis = 1)
+            input_test_data = test_df.drop(columns = [target_column],axis = 1)
             target_test_data = test_df[target_column]
             input_train_data_alt = preprocessor_obj.fit_transform(input_train_data)
             input_test_data_alt = preprocessor_obj.transform(input_test_data)
             train_arr = np.c_[input_train_data_alt,np.array(target_train_data)]
             test_arr = np.c_[input_test_data_alt,np.array(target_test_data)]
+            logging.info(f"Saved preprocessing object.")
             save_object(
                 file_path = self.data_transformation_config.preprocessor_obj_path,
                 obj = preprocessor_obj
